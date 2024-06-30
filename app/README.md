@@ -20,8 +20,11 @@ This project is an audio deepfake detection system developed for the Julius Baer
 - **Likelihood Computation**: Computes the likelihood of a potential impersonator's voice being generated from a specific person's "blueprint."
 
 ### Information Verification
-- **Fact Checking**: Utilizes an on-premise LLaMA2 8 billion parameter model to verify information provided by the client against known data.
-- **Audio-to-Text Translation**: Uses Whisper Large V3, an open-source model, to convert audio to text for further processing.
+- Transcription of wav files using **whisper v3** locally (about 1 hour with a large model, on mac m1)
+- Translation of every non-english transcript into english using **mbart** locally (very fast on mac m1)
+- Extraction of "stated facts" into a **structured json** format using json magic, parsing, and careful llm prompts (mixtral 8b through groq cloud)
+- Option 1: llama prompt taking in call transcript and one row of client data, asked to evaluate "statement by statement" if what is said matches with corresponding column in client data, and outputting a boolean at the end (easy to parse)
+- Option 2 (not implemented): More rigorous client data checking using the structured json, manually eventually llm-assisted (probably more stable and always faster)
 
 ## Setup Instructions
 To set up the project, follow these steps:
