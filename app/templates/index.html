@@ -8,18 +8,18 @@
         body {
             font-family: 'Roboto', sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             background-color: #f4f4f4;
             margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
-		.logo {
-			position: absolute;
-			top: 30px; /* Adjusts the top margin */
-			left: 30; /* Adjusts the left margin */
-			width: 300px; /* Example size, adjust as necessary */
-		}
+        .logo {
+            width: 300px;
+            margin-bottom: 30px;
+        }
         #drop_zone {
             width: 300px;
             height: 200px;
@@ -35,6 +35,7 @@
             cursor: pointer;
             position: relative;
             transition: background-color 0.3s;
+            margin-bottom: 20px;
         }
         .spinner {
             display: none;
@@ -50,11 +51,10 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .results, .image-container, .audio-player-container {
+        .results {
             display: flex;
             gap: 20px;
-            margin-top: 20px;
-            justify-content: center; /* Center children horizontally */
+            margin-bottom: 20px;
         }
         .result-bubble {
             width: 100px;
@@ -69,36 +69,38 @@
             background-color: #bbb;
         }
         .image-display, #audioPlayer {
-            width: 200px;            /* Set the width */
-            height: 200px;           /* Set the height */
-            background-size: cover;  /* Cover the entire area of the div */
-            background-position: center; /* Center the background image */
-            background-repeat: no-repeat; /* Do not repeat the image */
-            border-radius: 10px;     /* Rounded corners */
-            border: 1px solid #ddd;  /* Border around the div */
+            width: 200px;
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
         }
         #audioPlayer {
-            display: none;           /* Hide initially */
+            display: none;
+        }
+        #fileInput {
+            display: none;
         }
     </style>
 </head>
 <body>
-	<img src="https://www.top-bank.ch/images/logo_540/banque-julius-baer-cie.png" alt="Julius Baer Logo" class="logo">
-	<!-- Existing content follows -->
-    <div id="drop_zone">Drop audio file here<span class="spinner"></span></div>
+    <img src="https://www.top-bank.ch/images/logo_540/banque-julius-baer-cie.png" alt="Julius Baer Logo" class="logo">
+    <div id="drop_zone">Drop audio file here or click to select<span class="spinner"></span></div>
+    <input type="file" id="fileInput" accept="audio/*">
     <div class="results">
         <div class="result-bubble fake">Fake Audio</div>
-        <div class="result-bubble impostor">Impostor</div>
-        <div class="result-bubble voice-matching">Voice Matching</div>
+        <div class="result-bubble impostor">Check Fact</div>
+        <div class="result-bubble voice-matching">Imposter Detection</div>
     </div>
-    <div class="image-container">
-        <div class="image-display"></div>
-    </div>
-    <div class="audio-player-container">
-        <audio id="audioPlayer" controls></audio>
-    </div>
+    <div class="image-display"></div>
+    <audio id="audioPlayer" controls></audio>
+
     <script>
         var dropZone = document.getElementById('drop_zone');
+        var fileInput = document.getElementById('fileInput');
         var spinner = document.querySelector('.spinner');
         var fakeBubble = document.querySelector('.fake');
         var impostorBubble = document.querySelector('.impostor');
@@ -107,7 +109,7 @@
         var audioPlayer = document.getElementById('audioPlayer');
 
         function updateResults(fake, wrong_info, voiceMatching, imageName) {
-			console.log(fake, wrong_info, voiceMatching, imageName);
+            console.log(fake, wrong_info, voiceMatching, imageName);
             fakeBubble.textContent = `Fake Audio: ${fake > 0.5 ? 'Yes' : 'No'}`;
             fakeBubble.style.backgroundColor = fake > 0.5 ? '#F44336' : '#4CAF50';
             impostorBubble.textContent = `Impostor: ${wrong_info > 0.5 ? 'Yes' : 'No'}`;
@@ -130,37 +132,6 @@
                         imageDisplay.style.backgroundImage = 'none';
                     });
             }
-			dropZone.addEventListener('drop', function(event) {
-				event.preventDefault();
-				dropZone.style.backgroundColor = 'white';
-				showSpinner(true);
-				var files = event.dataTransfer.files;
-				setupAudioPlayer(files[0]);  // Setup audio player immediately with the dropped file
-			
-				// Clear existing image display when a new file is dropped
-				imageDisplay.style.backgroundImage = 'none';
-			
-				var formData = new FormData();
-				formData.append('file', files[0]);
-			
-				fetch('/upload', {
-					method: 'POST',
-					body: formData
-				})
-				.then(response => response.json())
-				.then(data => {
-					showSpinner(false);
-					if (data.error) {
-						alert(data.error);
-					} else {
-						updateResults(data.fake, data.wrong_info, data.impostor, data.name);
-					}
-				})
-				.catch(error => {
-					console.error('Error:', error);
-					showSpinner(false);
-				});
-			});
         }
 
         function showSpinner(show) {
@@ -176,24 +147,13 @@
             reader.readAsDataURL(file);
         }
 
-        dropZone.addEventListener('dragover', function(event) {
-            event.preventDefault();
-            dropZone.style.backgroundColor = '#b3e5fc';
-        });
-
-        dropZone.addEventListener('dragleave', function(event) {
-            event.preventDefault();
-            dropZone.style.backgroundColor = 'white';
-        });
-
-        dropZone.addEventListener('drop', function(event) {
-            event.preventDefault();
-            dropZone.style.backgroundColor = 'white';
+        function handleFile(file) {
             showSpinner(true);
-            var files = event.dataTransfer.files;
-            setupAudioPlayer(files[0]);  // Setup audio player immediately with the dropped file
+            setupAudioPlayer(file);
+            imageDisplay.style.backgroundImage = 'none';
+
             var formData = new FormData();
-            formData.append('file', files[0]);
+            formData.append('file', file);
 
             fetch('/upload', {
                 method: 'POST',
@@ -212,6 +172,36 @@
                 console.error('Error:', error);
                 showSpinner(false);
             });
+        }
+
+        dropZone.addEventListener('dragover', function(event) {
+            event.preventDefault();
+            dropZone.style.backgroundColor = '#b3e5fc';
+        });
+
+        dropZone.addEventListener('dragleave', function(event) {
+            event.preventDefault();
+            dropZone.style.backgroundColor = 'white';
+        });
+
+        dropZone.addEventListener('drop', function(event) {
+            event.preventDefault();
+            dropZone.style.backgroundColor = 'white';
+            var files = event.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        dropZone.addEventListener('click', function() {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', function(event) {
+            var files = event.target.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
         });
     </script>
 </body>

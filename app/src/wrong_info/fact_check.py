@@ -6,6 +6,7 @@ import traceback
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 results_path = os.path.join(BASE_DIR, 'wrong_info', 'wrong_info_results.csv')
+print(results_path)
 matched_results_path = os.path.join(BASE_DIR, 'impersonator', 'filtered_matched_results.csv')
 
 
@@ -113,7 +114,7 @@ def check_facts(transcript_id, client_data_file, client):
 def write_result(transcript_id, result):
     results_path = os.path.join(BASE_DIR, 'src', 'wrong_info', 'fact_check_results.csv')
     
-    # Check if the file exists, if not, create it with headers
+    # Check if exists, if not, create it with headers
     file_exists = os.path.isfile(results_path)
     
     with open(results_path, 'a', newline='') as csvfile:
@@ -123,7 +124,6 @@ def write_result(transcript_id, result):
         if not file_exists:
             writer.writerow(['rec_id', 'result'])
         
-        # Write the result
         writer.writerow([transcript_id, 'TRUE' if result else 'FALSE'])
 
 def process_transcript(client_data_file, transcript_id):
