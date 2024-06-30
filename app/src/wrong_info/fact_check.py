@@ -42,7 +42,7 @@ def get_row_data(client_data_file, full_name):
     return None
 
 def load_transcript(transcript_id):
-    transcript_dir = os.path.join(BASE_DIR, 'assets', 'json')
+    transcript_dir = "../audio_clips"
     transcript_file = f"{transcript_id}.json"
     try:
         with open(os.path.join(transcript_dir, transcript_file), 'r') as f:
@@ -112,7 +112,7 @@ def check_facts(transcript_id, client_data_file, client):
         return None, None
 
 def write_result(transcript_id, result):
-    results_path = os.path.join(BASE_DIR, 'src', 'wrong_info', 'fact_check_results.csv')
+    results_path = os.path.join(BASE_DIR, 'wrong_info', 'fact_check_results.csv')
     
     # Check if exists, if not, create it with headers
     file_exists = os.path.isfile(results_path)
@@ -137,7 +137,7 @@ def process_transcript(client_data_file, transcript_id):
     else:
         print(f"Unable to process transcript {transcript_id}")
     
-    return result
+    return not result
 
 def run_fact_check(client_data_file, transcript_id):
     load_transcript_data()
