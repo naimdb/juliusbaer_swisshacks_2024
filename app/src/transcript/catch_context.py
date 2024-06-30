@@ -6,6 +6,11 @@ from jsonpatch import JsonPatch
 
 client = Groq(api_key=os.environ["GROQ_API_KEY"])
 
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+INPUT_DIR = os.path.join(BASE_DIR, "audio_clips")
+OUTPUT_DIR = os.path.join(BASE_DIR, "json")
+TEMP_DIR = os.path.join(BASE_DIR, "tmp")
+
 def get_info(item, file_id):
     prompt = """Can you extract the name of the person calling? Also retrieve birthday, marital status, account number, tax residency, net worth in millions, profession, social security number, relationship manager. Everything should be in a JSON file with the ID. Here's the input:
 
@@ -31,54 +36,47 @@ Please structure your response as a JSON object with fields for 'ID', 'Name', 'b
     
     return chat_completion.choices[0].message.content
 
-def is_valid_utf8(text):
+def process_json_file(file_path):
     try:
-        text.encode('utf-8').decode('utf-8')
-        return True
-    except UnicodeEncodeError:
-        return False
-    except UnicodeDecodeError:
-        return False
-
-input_folder = os.path.expanduser("~/JB_SwissHacks/json")
-
-try:
-    for filename in os.listdir(input_folder):
-        if filename.endswith('.json'):
-            file_path = os.path.join(input_folder, filename)
+        with open(file_path, 'r', encoding='utf-8') as file:
+            json_data = json.load(file)
+        
+        translated_text = json_data.get('result', {}).get('translated_text')
+        
+        if translated_text:
+            file_id = os.path.splitext(os.path.basename(file_path))[0]
+            info = get_info(translated_text, file_id)
             try:
-                with open(file_path, 'r', encoding='utf-8') as file:
-                    json_data = json.load(file)
-                    
-                    translated_text = json_data.get('result', {}).get('translated_text')
-                    
-                    if translated_text and is_valid_utf8(translated_text):
-                        file_id = os.path.splitext(filename)[0]
-                        info = get_info(translated_text, file_id)
-                        try:
-                            info_dict = json.loads(info)
-                            info_dict = {k: v for k, v in info_dict.items() if v not in (None, "", "null")}
-                            
-                            patch = JsonPatch([
-                                {"op": "add", "path": "/context", "value": info_dict}
-                            ])
-                            
-                            patched_json = patch.apply(json_data)
-                            
-                            with open(file_path, 'w', encoding='utf-8') as outfile:
-                                json.dump(patched_json, outfile, indent=2, ensure_ascii=False)
-                            
-                            print(f"Processed and updated: {filename}")
-                        except json.JSONDecodeError:
-                            print(f"JSON parsing error for file: {filename}")
-                            print(f"Received response: {info}")
-                    else:
-                        print(f"Invalid or non-UTF-8 text in: {filename}")
+                info_dict = json.loads(info)
+                info_dict = {k: v for k, v in info_dict.items() if v not in (None, "", "null")}
+                
+                patch = JsonPatch([
+                    {"op": "add", "path": "/context", "value": info_dict}
+                ])
+                
+                patched_json = patch.apply(json_data)
+                
+                with open(file_path, 'w', encoding='utf-8') as outfile:
+                    json.dump(patched_json, outfile, indent=2, ensure_ascii=False)
+                
+                print(f"Processed and updated: {file_path}")
+            except json.JSONDecodeError:
+                print(f"JSON parsing error for file: {file_path}")
+                print(f"Received response: {info}")
+        else:
+            print(f"No translated text found in: {file_path}")
 
-            except UnicodeDecodeError:
-                print(f"UTF-8 decoding error for file: {filename}")
-            
-            time.sleep(2)
+    except UnicodeDecodeError:
+        print(f"UTF-8 decoding error for file: {file_path}")
+    except Exception as e:
+        print(f"Error processing {file_path}: {e}")
 
-except Exception as e:
-    print(f"An error occurred: {e}")
+def main():
+    for filename in os.listdir(OUTPUT_DIR):
+        if filename.endswith('.json'):
+            file_path = os.path.join(OUTPUT_DIR, filename)
+            process_json_file(file_path)
+            time.sleep(2)  # Adding a delay to avoid rate limiting
+
+if __name__ == "__main__":
+    main()

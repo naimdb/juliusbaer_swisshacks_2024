@@ -2,10 +2,12 @@ import json
 import os
 from transformers import MBartForConditionalGeneration, MBart50TokenizerFast, GenerationConfig
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-INPUT_DIR = os.path.join(BASE_DIR, "audio")
-JSON_DIR = os.path.join(BASE_DIR, "json")
-TEMP_DIR = os.path.join(BASE_DIR, "temp")
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+INPUT_DIR = os.path.join(BASE_DIR, "audio_clips")
+OUTPUT_DIR = os.path.join(BASE_DIR, "json")
+TEMP_DIR = os.path.join(BASE_DIR, "tmp")
+
 MODEL_DIR = os.path.join(BASE_DIR, "local_mbart_model")
 TOKENIZER_DIR = os.path.join(BASE_DIR, "local_mbart_tokenizer")
 
@@ -48,6 +50,9 @@ def translate_to_english(text, src_lang):
         )
         translated_text = tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)[0]
         
+        if not all(ord(char) < 128 for char in translated_text):
+            print(f"Warning: Translation may not be in English. Source language: {src_lang}")
+        
         return translated_text
     except Exception as e:
         print(f"Error during translation: {e}")
@@ -65,6 +70,9 @@ def process_json_file(input_json):
             
             if language != 'en':
                 translated_text = translate_to_english(full_text, language)
+                if not all(ord(char) < 128 for char in translated_text):
+                    print(f"Warning: Translation for {input_json} may not be in English. Skipping.")
+                    return
                 data['result']['translated_text'] = translated_text
             else:
                 data['result']['translated_text'] = full_text
@@ -77,14 +85,14 @@ def process_json_file(input_json):
         print(f"Error processing {input_json}: {e}")
 
 def main():
-    for directory in [INPUT_DIR, JSON_DIR, TEMP_DIR]:
+    for directory in [INPUT_DIR, OUTPUT_DIR, TEMP_DIR]:
         if not os.path.exists(directory):
             os.makedirs(directory)
             print(f"Folder created: {directory}")
 
-    for filename in os.listdir(JSON_DIR):
+    for filename in os.listdir(OUTPUT_DIR):
         if filename.endswith('.json'):
-            input_json = os.path.join(JSON_DIR, filename)
+            input_json = os.path.join(OUTPUT_DIR, filename)
             process_json_file(input_json)
 
 if __name__ == "__main__":
