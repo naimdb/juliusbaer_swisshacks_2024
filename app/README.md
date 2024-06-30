@@ -38,7 +38,10 @@ To set up the project, follow these steps:
    ```
    Optionally, for faster execution, consider using the `--user` flag or `mamba` as a faster alternative to `conda`.
 
-3. **Deepfake Detection Module**:
+3. **Load and Transform Data**
+Download the audioXYZ.wav then use whispered to trransform them translated to audioXYZ.json
+
+4. **Deepfake Detection Module**:
    - **Training the Model**:
      ```
      python src/fake/train_fake.py
@@ -48,20 +51,20 @@ To set up the project, follow these steps:
      python src/fake/predict.py ../audio_clips
      ```
 
-4. **Impersonation Detection Module**:
+5. **Impersonation Detection Module**:
    - **Train and Evaluate Models**:
      Open and run the Jupyter Notebook:
      ```
      jupyter notebook src/impersonator/train_evaluate.ipynb
      ```
 
-5. **Information Verification Module**:
+6. **Information Verification Module**:
    - **Match Audio to Person**:
      ```
      python src/message.py
      ```
 
-6. **Web Application**:
+7. **Web Application**:
    - **Launch the Application**:
      ```
      python app.py
