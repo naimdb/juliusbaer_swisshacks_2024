@@ -91,9 +91,9 @@
     <div id="drop_zone">Drop audio file here or click to select<span class="spinner"></span></div>
     <input type="file" id="fileInput" accept="audio/*">
     <div class="results">
-        <div class="result-bubble fake">Fake Audio</div>
-        <div class="result-bubble impostor">Check Fact</div>
-        <div class="result-bubble voice-matching">Imposter Detection</div>
+        <div class="result-bubble fake">AI Generated Recording</div>
+        <div class="result-bubble impostor">Client Info Matching Profile</div>
+        <div class="result-bubble voice-matching">Impostor</div>
     </div>
     <div class="image-display"></div>
     <audio id="audioPlayer" controls></audio>
@@ -110,11 +110,11 @@
 
         function updateResults(fake, wrong_info, voiceMatching, imageName) {
             console.log(fake, wrong_info, voiceMatching, imageName);
-            fakeBubble.textContent = `Fake Audio: ${fake > 0.5 ? 'Yes' : 'No'}`;
+            fakeBubble.textContent = `AI Generated Recording: ${fake > 0.5 ? 'Yes' : 'No'}`;
             fakeBubble.style.backgroundColor = fake > 0.5 ? '#F44336' : '#4CAF50';
-            impostorBubble.textContent = `Impostor: ${wrong_info > 0.5 ? 'Yes' : 'No'}`;
+            impostorBubble.textContent = `Client Info Matching Profile: ${wrong_info > 0.5 ? 'No' : 'Yes'}`;
             impostorBubble.style.backgroundColor = wrong_info > 0.5 ? '#F44336' : '#4CAF50';
-            voiceMatchingBubble.textContent = `Voice Matching: ${voiceMatching > 0.5 ? 'No' : 'Yes'}`;
+            voiceMatchingBubble.textContent = `Impostor: ${voiceMatching > 0.5 ? 'Yes' : 'No'}`;
             voiceMatchingBubble.style.backgroundColor = voiceMatching > 0.5 ? '#F44336' : '#4CAF50';
 
             if (imageName) {
