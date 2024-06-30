@@ -35,7 +35,7 @@ def upload():
     if file and file.filename.endswith('.wav'):
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(file_path)
-        # PAth to absolute path
+        # Path to absolute path
         file_path = os.path.abspath(file_path)
         print(file_path)
         fake, wrong_info, impostor, name = analyse_audio(file_path)
